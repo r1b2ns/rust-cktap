@@ -4,8 +4,8 @@
 import PackageDescription
 
 // Update tag and checksum when publishing a new Swift binary release.
-let tag = "v0.2.0"
-let checksum = "26e1419b0408a12c11c99fb3cec10b336f97b34eaf7fa8b708ae814cec9842d3"
+let tag = "v0.2.1"
+let checksum = "092e2d3fff08747cb8a3a7ca17107a2ff98497c72cec40ebf263bfeb0569ac19"
 let url = "https://github.com/bitcoindevkit/rust-cktap/releases/download/\(tag)/cktapFFI.xcframework.zip"
 
 let package = Package(
