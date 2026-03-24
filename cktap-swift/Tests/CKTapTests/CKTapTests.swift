@@ -74,4 +74,19 @@ final class CKTapTests: XCTestCase {
       print("SatsChip xpub: \(xpub)")
     }
   }
+
+  func testWaitReturnsNilWhenNoDelayIsActive() async throws {
+    let cardEmulator = CardEmulator()
+    let card = try await toCktap(transport: cardEmulator)
+
+    switch card {
+    case .satsCard(let satsCard):
+      let remainingDelay = try await satsCard.wait()
+      XCTAssertNil(remainingDelay)
+    case .tapSigner:
+      throw XCTSkip("stepwise wait is only exposed on SatsCard in this release")
+    case .satsChip:
+      throw XCTSkip("stepwise wait is only exposed on SatsCard in this release")
+    }
+  }
 }

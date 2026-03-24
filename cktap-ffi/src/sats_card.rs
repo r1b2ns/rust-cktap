@@ -67,14 +67,10 @@ impl SatsCard {
         Ok(pubkey_desc)
     }
 
-    /// Wait 15 seconds or until auth delay timeout is done
-    pub async fn wait(&self) -> Result<(), CkTapError> {
+    /// Wait one second of auth delay and return the remaining delay, if any.
+    pub async fn wait(&self) -> Result<Option<u8>, CkTapError> {
         let mut card = self.0.lock().await;
-        // if auth delay call wait
-        while card.auth_delay().is_some() {
-            card.wait(None).await?;
-        }
-        Ok(())
+        card.wait(None).await.map_err(CkTapError::from)
     }
 
     /// Verify the card has authentic Coinkite root certificate
