@@ -20,22 +20,22 @@ use bitcoin::secp256k1::{self, All, Message, Secp256k1, ecdsa::Signature};
 use bitcoin_hashes::sha256;
 use std::sync::Arc;
 
-const BIP84_PATH_LEN: usize = 5;
+const BIP84_PATH_LEN: u32 = 5;
 
 // BIP84 derivation path structure, m / 84' / 0' / account' / change / address_index
 
 // Derivation sub-path indexes that must be hardened
-const BIP84_HARDENED_SUBPATH: [usize; 3] = [0, 1, 2];
+const BIP84_HARDENED_SUBPATH: [u32; 3] = [0, 1, 2];
 
 pub struct TapSigner {
     pub transport: Arc<dyn CkTransport>,
     pub secp: Secp256k1<All>,
-    pub proto: usize,
+    pub proto: u32,
     pub ver: String,
-    pub birth: usize,
-    pub path: Option<Vec<usize>>,
+    pub birth: u32,
+    pub path: Option<Vec<u32>>,
     // [(1<<31)+84, (1<<31), (1<<31)], user-defined, will be omitted if not yet setup
-    pub num_backups: Option<usize>,
+    pub num_backups: Option<u32>,
     pub pubkey: PublicKey,
     pub card_nonce: [u8; 16],
     pub auth_delay: Option<u8>,
@@ -162,14 +162,14 @@ pub trait TapSignerShared: Authentication {
             let witness_utxo = input
                 .witness_utxo
                 .as_ref()
-                .ok_or(SignPsbtError::MissingUtxo(input_index))?;
+                .ok_or(SignPsbtError::MissingUtxo(input_index as u32))?;
 
             let amount = witness_utxo.value;
 
             // extract the P2WPKH script from PSBT
             let script_pubkey = &witness_utxo.script_pubkey;
             if !script_pubkey.is_p2wpkh() {
-                return Err(SignPsbtError::InvalidScript(input_index));
+                return Err(SignPsbtError::InvalidScript(input_index as u32));
             }
 
             // get the public key from the PSBT
@@ -177,17 +177,17 @@ pub trait TapSignerShared: Authentication {
             let (psbt_pubkey, (_fingerprint, path)) = key_pairs
                 .iter()
                 .next()
-                .ok_or(SignPsbtError::MissingPubkey(input_index))?;
+                .ok_or(SignPsbtError::MissingPubkey(input_index as u32))?;
 
             let path = path.to_u32_vec();
 
-            if path.len() != BIP84_PATH_LEN {
-                return Err(SignPsbtError::InvalidPath(input_index));
+            if path.len() as u32 != BIP84_PATH_LEN {
+                return Err(SignPsbtError::InvalidPath(input_index as u32));
             }
 
-            let sub_path = BIP84_HARDENED_SUBPATH.map(|i| path[i]);
+            let sub_path = BIP84_HARDENED_SUBPATH.map(|i| path[i as usize]);
             if sub_path.iter().any(|p| *p > BIP32_HARDENED_MASK) {
-                return Err(SignPsbtError::InvalidPath(input_index));
+                return Err(SignPsbtError::InvalidPath(input_index as u32));
             }
 
             // calculate sighash
@@ -214,7 +214,7 @@ pub trait TapSignerShared: Authentication {
                     .collect();
                 let derive_response = self.derive(path, cvc).await;
                 if derive_response.is_err() {
-                    return Err(SignPsbtError::PubkeyMismatch(input_index));
+                    return Err(SignPsbtError::PubkeyMismatch(input_index as u32));
                 }
 
                 // update signature to the new one we just derived
@@ -223,7 +223,7 @@ pub trait TapSignerShared: Authentication {
 
                 // if still not matching, return error
                 if sign_response.pubkey != psbt_pubkey.serialize() {
-                    return Err(SignPsbtError::PubkeyMismatch(input_index));
+                    return Err(SignPsbtError::PubkeyMismatch(input_index as u32));
                 }
             }
 
@@ -286,11 +286,11 @@ pub trait TapSignerShared: Authentication {
     /// Change the CVC used for card authentication to a new user provided one
     async fn change(&mut self, new_cvc: &str, cvc: &str) -> Result<(), ChangeError> {
         if new_cvc.len() < 6 {
-            return Err(ChangeError::TooShort(new_cvc.len()));
+            return Err(ChangeError::TooShort(new_cvc.len() as u8));
         }
 
         if new_cvc.len() > 32 {
-            return Err(ChangeError::TooLong(new_cvc.len()));
+            return Err(ChangeError::TooLong(new_cvc.len() as u8));
         }
 
         if new_cvc == cvc {

@@ -25,9 +25,9 @@ use std::sync::Arc;
 pub struct SatsCard {
     pub transport: Arc<dyn CkTransport>,
     pub secp: Secp256k1<All>,
-    pub proto: usize,
+    pub proto: u32,
     pub ver: String,
-    pub birth: usize,
+    pub birth: u32,
     pub slots: (u8, u8),
     pub addr: Option<String>,
     pub pubkey: PublicKey,
@@ -372,14 +372,14 @@ impl SatsCard {
             let witness_utxo = input
                 .witness_utxo
                 .as_ref()
-                .ok_or(Error::MissingUtxo(input_index))?;
+                .ok_or(Error::MissingUtxo(input_index as u32))?;
 
             let amount = witness_utxo.value;
 
             // extract the P2WPKH script from PSBT
             let script_pubkey = &witness_utxo.script_pubkey;
             if !script_pubkey.is_p2wpkh() {
-                return Err(Error::InvalidScript(input_index));
+                return Err(Error::InvalidScript(input_index as u32));
             }
 
             // get the public key from the PSBT
@@ -387,10 +387,10 @@ impl SatsCard {
             let (psbt_pubkey, (_fingerprint, path)) = key_pairs
                 .iter()
                 .next()
-                .ok_or(Error::MissingPubkey(input_index))?;
+                .ok_or(Error::MissingPubkey(input_index as u32))?;
 
             if !path.is_empty() {
-                return Err(Error::InvalidPath(input_index));
+                return Err(Error::InvalidPath(input_index as u32));
             }
 
             // calculate sighash
@@ -408,7 +408,7 @@ impl SatsCard {
 
             // verify that SATSCARD used the same public key as the PSBT
             if sign_response.pubkey != psbt_pubkey.serialize() {
-                return Err(Error::PubkeyMismatch(input_index));
+                return Err(Error::PubkeyMismatch(input_index as u32));
             }
 
             // update the PSBT input with the signature

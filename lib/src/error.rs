@@ -131,9 +131,9 @@ pub enum ChangeError {
     #[error(transparent)]
     CkTap(#[from] CkTapError),
     #[error("new cvc is too short, must be at least 6 bytes, was only {0} bytes")]
-    TooShort(usize),
+    TooShort(u8),
     #[error("new cvc is too long, must be at most 32 bytes, was {0} bytes")]
-    TooLong(usize),
+    TooLong(u8),
     #[error("new cvc is the same as the old one")]
     SameAsOld,
 }
@@ -228,15 +228,15 @@ pub enum DumpError {
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
 pub enum SignPsbtError {
     #[error("Invalid path at index: {0}")]
-    InvalidPath(usize),
+    InvalidPath(u32),
     #[error("Invalid script at index: {0}")]
-    InvalidScript(usize),
+    InvalidScript(u32),
     #[error("Missing pubkey at index: {0}")]
-    MissingPubkey(usize),
+    MissingPubkey(u32),
     #[error("Missing UTXO at index: {0}")]
-    MissingUtxo(usize),
+    MissingUtxo(u32),
     #[error("Pubkey mismatch at index: {0}")]
-    PubkeyMismatch(usize),
+    PubkeyMismatch(u32),
     #[error("Sighash error: {0}")]
     SighashError(String),
     #[error("Signature error: {0}")]

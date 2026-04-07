@@ -20,12 +20,12 @@ use crate::tap_signer::TapSignerShared;
 pub struct SatsChip {
     pub transport: Arc<dyn CkTransport>,
     pub secp: Secp256k1<All>,
-    pub proto: usize,
+    pub proto: u32,
     pub ver: String,
-    pub birth: usize,
-    pub path: Option<Vec<usize>>,
+    pub birth: u32,
+    pub path: Option<Vec<u32>>,
     // [(1<<31)+84, (1<<31), (1<<31)], user-defined, will be omitted if not yet setup
-    pub num_backups: Option<usize>,
+    pub num_backups: Option<u32>,
     pub pubkey: PublicKey,
     pub card_nonce: [u8; 16],
     pub auth_delay: Option<u8>,

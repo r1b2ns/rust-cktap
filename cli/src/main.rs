@@ -228,7 +228,7 @@ async fn main() -> Result<(), CliError> {
                     dbg!(response);
                 }
                 TapSignerCommand::Derive { path } => {
-                    // let test_path:Vec<usize> = ts.path.clone().unwrap().iter().map(|p| p ^ (1 << 31)).collect();
+                    // let test_path:Vec<u32> = ts.path.clone().unwrap().iter().map(|p| p ^ (1 << 31)).collect();
                     // dbg!(test_path);
                     dbg!(&ts.derive(path.unwrap_or_default(), &cvc()).await);
                 }

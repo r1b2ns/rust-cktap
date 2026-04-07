@@ -2680,8 +2680,8 @@ extension DumpError: Foundation.LocalizedError {
 
 public enum KeyError: Swift.Error {
 
-    
-    
+
+
     case Secp256k1(msg: String
     )
     case KeyFromSlice(msg: String

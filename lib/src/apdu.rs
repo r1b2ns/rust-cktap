@@ -97,11 +97,11 @@ impl CommandApdu for StatusCommand {
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StatusResponse {
     /// Version of CBOR protocol in use.
-    pub proto: usize,
-    /// Firmware version of card itself.
+    pub proto: u32,
+    /// Firmware version of the card itself.
     pub ver: String,
     /// Card birth block height (int) (fixed after production).
-    pub birth: usize,
+    pub birth: u32,
     /// SATSCARD Only: Tuple of (active_slot, num_slots).
     pub slots: Option<(u8, u8)>,
     /// SATSCARD Only: Payment address, middle chars blanked out with 3 underscores.
@@ -114,9 +114,9 @@ pub struct StatusResponse {
     /// effect. It encodes a BIP-32 derivation path, like m/84h/0h/0h, which is a typical value for
     /// segwit usage, although the value is controlled by the wallet application. The field is only
     /// present if a master key has been picked (i.e., setup is complete).
-    pub path: Option<Vec<usize>>,
+    pub path: Option<Vec<u32>>,
     /// Counts up, when backup command is used.
-    pub num_backups: Option<usize>,
+    pub num_backups: Option<u32>,
     /// Public key unique to this card (fixed for card life) aka: card_pubkey.
     #[serde(with = "serde_bytes")]
     pub pubkey: Vec<u8>,
@@ -836,7 +836,7 @@ impl CommandApdu for DumpCommand {
 pub struct DumpResponse {
     /// slot just made
     #[allow(unused)] // TODO verify this is correct slot
-    pub slot: usize,
+    pub slot: u8,
     /// private key for spending (for addr), 32 bytes
     /// The private keys are encrypted, XORed with the session key
     #[serde(with = "serde_bytes")]
