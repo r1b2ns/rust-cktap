@@ -79,7 +79,7 @@ just stop # stop emulator
 #### Run CLI with desktop USB PCSC NFC card reader
 
 ```
-just run --help
+just run -- --help
 just run certs
 just run read
 ```

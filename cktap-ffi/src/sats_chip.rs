@@ -38,7 +38,7 @@ impl SatsChip {
                 .map(|p| p.iter().map(|&p| p as u64).collect()),
             pubkey: card.pubkey().to_string(),
             card_ident: card.card_ident(),
-            auth_delay: card.auth_delay().map(|d| d as u8),
+            auth_delay: card.auth_delay(),
         }
     }
 

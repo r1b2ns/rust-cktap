@@ -48,7 +48,7 @@ impl SatsCard {
             addr: card.addr.clone(),
             pubkey,
             card_ident: card.card_ident(),
-            auth_delay: card.auth_delay().map(|d| d as u8),
+            auth_delay: card.auth_delay(),
         }
     }
 

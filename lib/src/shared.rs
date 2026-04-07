@@ -76,8 +76,8 @@ pub trait Authentication {
     fn pubkey(&self) -> &PublicKey;
     fn card_nonce(&self) -> &[u8; 16];
     fn set_card_nonce(&mut self, new_nonce: [u8; 16]);
-    fn auth_delay(&self) -> &Option<usize>;
-    fn set_auth_delay(&mut self, auth_delay: Option<usize>);
+    fn auth_delay(&self) -> Option<u8>;
+    fn set_auth_delay(&mut self, auth_delay: Option<u8>);
     fn transport(&self) -> Arc<dyn CkTransport>;
     fn card_ident(&self) -> String {
         card_pubkey_to_ident(self.pubkey())
@@ -244,7 +244,7 @@ pub trait Read: Authentication {
 
 #[async_trait]
 pub trait Wait: Authentication {
-    async fn wait(&mut self, cvc: Option<String>) -> Result<Option<usize>, CkTapError> {
+    async fn wait(&mut self, cvc: Option<String>) -> Result<Option<u8>, CkTapError> {
         let epubkey_xcvc = cvc.map(|cvc| {
             let (_, epubkey, xcvc) = self.calc_ekeys_xcvc(&cvc, WaitCommand::name());
             (epubkey, xcvc)

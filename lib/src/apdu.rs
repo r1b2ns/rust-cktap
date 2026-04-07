@@ -132,7 +132,7 @@ pub struct StatusResponse {
     /// normal operation begins. If the CVC value is incorrect, the 15-second delay between
     /// attempts continues.
     #[serde(default)]
-    pub auth_delay: Option<usize>,
+    pub auth_delay: Option<u8>,
 }
 
 impl ResponseApdu for StatusResponse {}
@@ -628,7 +628,7 @@ pub struct WaitResponse {
     success: bool,
     /// how much more delay is now required
     #[serde(default)]
-    pub(crate) auth_delay: usize,
+    pub(crate) auth_delay: u8,
 }
 
 impl ResponseApdu for WaitResponse {}

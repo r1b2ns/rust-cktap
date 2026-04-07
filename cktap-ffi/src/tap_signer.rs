@@ -41,7 +41,7 @@ impl TapSigner {
             num_backups: card.num_backups.unwrap_or_default() as u64,
             pubkey: card.pubkey().to_string(),
             card_ident: card.card_ident(),
-            auth_delay: card.auth_delay().map(|d| d as u8),
+            auth_delay: card.auth_delay(),
         }
     }
 

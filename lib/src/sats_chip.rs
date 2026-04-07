@@ -28,7 +28,7 @@ pub struct SatsChip {
     pub num_backups: Option<usize>,
     pub pubkey: PublicKey,
     pub card_nonce: [u8; 16],
-    pub auth_delay: Option<usize>,
+    pub auth_delay: Option<u8>,
 }
 
 impl Authentication for SatsChip {
@@ -52,11 +52,11 @@ impl Authentication for SatsChip {
         self.card_nonce = new_nonce;
     }
 
-    fn auth_delay(&self) -> &Option<usize> {
-        &self.auth_delay
+    fn auth_delay(&self) -> Option<u8> {
+        self.auth_delay
     }
 
-    fn set_auth_delay(&mut self, auth_delay: Option<usize>) {
+    fn set_auth_delay(&mut self, auth_delay: Option<u8>) {
         self.auth_delay = auth_delay;
     }
 
