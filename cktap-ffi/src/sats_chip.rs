@@ -47,13 +47,9 @@ impl SatsChip {
         read(&mut *card, None).await
     }
 
-    pub async fn wait(&self) -> Result<(), CkTapError> {
+    pub async fn wait(&self) -> Result<Option<u8>, CkTapError> {
         let mut card = self.0.lock().await;
-        // if auth delay call wait
-        while card.auth_delay().is_some() {
-            card.wait(None).await?;
-        }
-        Ok(())
+        card.wait(None).await.map_err(CkTapError::from)
     }
 
     pub async fn check_cert(&self) -> Result<(), CertsError> {

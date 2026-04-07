@@ -922,7 +922,7 @@ public protocol SatsChipProtocol: AnyObject, Sendable {
     
     func status() async  -> SatsChipStatus
     
-    func wait() async throws 
+    func wait() async throws  -> UInt8?
     
     func xpub(master: Bool, cvc: String) async throws  -> String
     
@@ -1112,7 +1112,7 @@ open func status()async  -> SatsChipStatus  {
         )
 }
     
-open func wait()async throws   {
+open func wait()async throws  -> UInt8?  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1121,10 +1121,10 @@ open func wait()async throws   {
                     
                 )
             },
-            pollFunc: ffi_cktap_ffi_rust_future_poll_void,
-            completeFunc: ffi_cktap_ffi_rust_future_complete_void,
-            freeFunc: ffi_cktap_ffi_rust_future_free_void,
-            liftFunc: { $0 },
+            pollFunc: ffi_cktap_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_cktap_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_cktap_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt8.lift,
             errorHandler: FfiConverterTypeCkTapError_lift
         )
 }
@@ -3775,7 +3775,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_cktap_ffi_checksum_method_satschip_status() != 14916) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_wait() != 25914) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_wait() != 900) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_cktap_ffi_checksum_method_satschip_xpub() != 24217) {
