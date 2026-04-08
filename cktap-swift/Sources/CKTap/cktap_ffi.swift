@@ -2019,9 +2019,9 @@ enum ChangeError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     
     case CkTap(err: CkTapError
     )
-    case TooShort(len: UInt8
+    case TooShort(len: UInt32
     )
-    case TooLong(len: UInt8
+    case TooLong(len: UInt32
     )
     case SameAsOld
 
@@ -2057,10 +2057,10 @@ public struct FfiConverterTypeChangeError: FfiConverterRustBuffer {
             err: try FfiConverterTypeCkTapError.read(from: &buf)
             )
         case 2: return .TooShort(
-            len: try FfiConverterUInt8.read(from: &buf)
+            len: try FfiConverterUInt32.read(from: &buf)
             )
         case 3: return .TooLong(
-            len: try FfiConverterUInt8.read(from: &buf)
+            len: try FfiConverterUInt32.read(from: &buf)
             )
         case 4: return .SameAsOld
 
@@ -2082,12 +2082,12 @@ public struct FfiConverterTypeChangeError: FfiConverterRustBuffer {
         
         case let .TooShort(len):
             writeInt(&buf, Int32(2))
-            FfiConverterUInt8.write(len, into: &buf)
+            FfiConverterUInt32.write(len, into: &buf)
             
         
         case let .TooLong(len):
             writeInt(&buf, Int32(3))
-            FfiConverterUInt8.write(len, into: &buf)
+            FfiConverterUInt32.write(len, into: &buf)
             
         
         case .SameAsOld:

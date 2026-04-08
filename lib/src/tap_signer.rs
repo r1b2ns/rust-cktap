@@ -286,11 +286,11 @@ pub trait TapSignerShared: Authentication {
     /// Change the CVC used for card authentication to a new user provided one
     async fn change(&mut self, new_cvc: &str, cvc: &str) -> Result<(), ChangeError> {
         if new_cvc.len() < 6 {
-            return Err(ChangeError::TooShort(new_cvc.len() as u8));
+            return Err(ChangeError::TooShort(new_cvc.len() as u32));
         }
 
         if new_cvc.len() > 32 {
-            return Err(ChangeError::TooLong(new_cvc.len() as u8));
+            return Err(ChangeError::TooLong(new_cvc.len() as u32));
         }
 
         if new_cvc == cvc {

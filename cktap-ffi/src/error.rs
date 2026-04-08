@@ -345,9 +345,9 @@ pub enum ChangeError {
         err: CkTapError,
     },
     #[error("new cvc is too short, must be at least 6 bytes, was only {len} bytes")]
-    TooShort { len: u8 },
+    TooShort { len: u32 },
     #[error("new cvc is too long, must be at most 32 bytes, was {len} bytes")]
-    TooLong { len: u8 },
+    TooLong { len: u32 },
     #[error("new cvc is the same as the old one")]
     SameAsOld,
 }
