@@ -269,15 +269,15 @@ impl From<rust_cktap::DumpError> for DumpError {
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, uniffi::Error)]
 pub enum SignPsbtError {
     #[error("Invalid path at index: {index}")]
-    InvalidPath { index: u64 },
+    InvalidPath { index: u32 },
     #[error("Invalid script at index: {index}")]
-    InvalidScript { index: u64 },
+    InvalidScript { index: u32 },
     #[error("Missing pubkey at index: {index}")]
-    MissingPubkey { index: u64 },
+    MissingPubkey { index: u32 },
     #[error("Missing UTXO at index: {index}")]
-    MissingUtxo { index: u64 },
+    MissingUtxo { index: u32 },
     #[error("Pubkey mismatch at index: {index}")]
-    PubkeyMismatch { index: u64 },
+    PubkeyMismatch { index: u32 },
     #[error("Sighash error: {msg}")]
     SighashError { msg: String },
     #[error("Signature error: {msg}")]
@@ -300,21 +300,17 @@ pub enum SignPsbtError {
 impl From<rust_cktap::SignPsbtError> for SignPsbtError {
     fn from(value: rust_cktap::SignPsbtError) -> SignPsbtError {
         match value {
-            rust_cktap::SignPsbtError::InvalidPath(index) => SignPsbtError::InvalidPath {
-                index: index as u64,
-            },
-            rust_cktap::SignPsbtError::InvalidScript(index) => SignPsbtError::InvalidScript {
-                index: index as u64,
-            },
-            rust_cktap::SignPsbtError::MissingPubkey(index) => SignPsbtError::MissingPubkey {
-                index: index as u64,
-            },
-            rust_cktap::SignPsbtError::MissingUtxo(index) => SignPsbtError::MissingUtxo {
-                index: index as u64,
-            },
-            rust_cktap::SignPsbtError::PubkeyMismatch(index) => SignPsbtError::PubkeyMismatch {
-                index: index as u64,
-            },
+            rust_cktap::SignPsbtError::InvalidPath(index) => SignPsbtError::InvalidPath { index },
+            rust_cktap::SignPsbtError::InvalidScript(index) => {
+                SignPsbtError::InvalidScript { index }
+            }
+            rust_cktap::SignPsbtError::MissingPubkey(index) => {
+                SignPsbtError::MissingPubkey { index }
+            }
+            rust_cktap::SignPsbtError::MissingUtxo(index) => SignPsbtError::MissingUtxo { index },
+            rust_cktap::SignPsbtError::PubkeyMismatch(index) => {
+                SignPsbtError::PubkeyMismatch { index }
+            }
             rust_cktap::SignPsbtError::SighashError(msg) => SignPsbtError::SighashError { msg },
             rust_cktap::SignPsbtError::SignatureError(msg) => SignPsbtError::SignatureError { msg },
             rust_cktap::SignPsbtError::SlotNotUnsealed(slot) => {
@@ -349,9 +345,9 @@ pub enum ChangeError {
         err: CkTapError,
     },
     #[error("new cvc is too short, must be at least 6 bytes, was only {len} bytes")]
-    TooShort { len: u64 },
+    TooShort { len: u8 },
     #[error("new cvc is too long, must be at most 32 bytes, was {len} bytes")]
-    TooLong { len: u64 },
+    TooLong { len: u8 },
     #[error("new cvc is the same as the old one")]
     SameAsOld,
 }
@@ -360,8 +356,8 @@ impl From<rust_cktap::ChangeError> for ChangeError {
     fn from(value: rust_cktap::ChangeError) -> Self {
         match value {
             rust_cktap::ChangeError::CkTap(err) => ChangeError::CkTap { err: err.into() },
-            rust_cktap::ChangeError::TooShort(len) => ChangeError::TooShort { len: len as u64 },
-            rust_cktap::ChangeError::TooLong(len) => ChangeError::TooLong { len: len as u64 },
+            rust_cktap::ChangeError::TooShort(len) => ChangeError::TooShort { len },
+            rust_cktap::ChangeError::TooLong(len) => ChangeError::TooLong { len },
             rust_cktap::ChangeError::SameAsOld => ChangeError::SameAsOld,
         }
     }

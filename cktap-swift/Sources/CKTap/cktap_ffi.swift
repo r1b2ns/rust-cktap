@@ -457,22 +457,6 @@ fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterUInt64: FfiConverterPrimitive {
-    typealias FfiType = UInt64
-    typealias SwiftType = UInt64
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt64 {
-        return try lift(readInt(&buf))
-    }
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterBool : FfiConverter {
     typealias FfiType = Int8
     typealias SwiftType = Bool
@@ -649,6 +633,11 @@ open class SatsCard: SatsCardProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_cktap_ffi_fn_free_satscard(handle, $0) }
     }
 
@@ -855,6 +844,7 @@ open func wait()async throws  -> UInt8?  {
 }
     
 
+    
 }
 
 
@@ -882,7 +872,6 @@ public struct FfiConverterTypeSatsCard: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
 
 
 #if swift(>=5.8)
@@ -969,6 +958,11 @@ open class SatsChip: SatsChipProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_cktap_ffi_fn_free_satschip(handle, $0) }
     }
 
@@ -1147,6 +1141,7 @@ open func xpub(master: Bool, cvc: String)async throws  -> String  {
 }
     
 
+    
 }
 
 
@@ -1174,7 +1169,6 @@ public struct FfiConverterTypeSatsChip: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
 
 
 #if swift(>=5.8)
@@ -1261,6 +1255,11 @@ open class TapSigner: TapSignerProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_cktap_ffi_fn_free_tapsigner(handle, $0) }
     }
 
@@ -1439,6 +1438,7 @@ open func xpub(master: Bool, cvc: String)async throws  -> String  {
 }
     
 
+    
 }
 
 
@@ -1468,7 +1468,6 @@ public struct FfiConverterTypeTapSigner: FfiConverter {
 }
 
 
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1486,10 +1485,10 @@ public func FfiConverterTypeTapSigner_lower(_ value: TapSigner) -> UInt64 {
 
 
 
-public struct SatsCardStatus {
-    public var proto: UInt64
+public struct SatsCardStatus: Equatable, Hashable {
+    public var proto: UInt32
     public var ver: String
-    public var birth: UInt64
+    public var birth: UInt32
     public var activeSlot: UInt8
     public var numSlots: UInt8
     public var addr: String?
@@ -1499,7 +1498,7 @@ public struct SatsCardStatus {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(proto: UInt64, ver: String, birth: UInt64, activeSlot: UInt8, numSlots: UInt8, addr: String?, pubkey: String, cardIdent: String, authDelay: UInt8?) {
+    public init(proto: UInt32, ver: String, birth: UInt32, activeSlot: UInt8, numSlots: UInt8, addr: String?, pubkey: String, cardIdent: String, authDelay: UInt8?) {
         self.proto = proto
         self.ver = ver
         self.birth = birth
@@ -1510,59 +1509,15 @@ public struct SatsCardStatus {
         self.cardIdent = cardIdent
         self.authDelay = authDelay
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SatsCardStatus: Sendable {}
 #endif
-
-
-extension SatsCardStatus: Equatable, Hashable {
-    public static func ==(lhs: SatsCardStatus, rhs: SatsCardStatus) -> Bool {
-        if lhs.proto != rhs.proto {
-            return false
-        }
-        if lhs.ver != rhs.ver {
-            return false
-        }
-        if lhs.birth != rhs.birth {
-            return false
-        }
-        if lhs.activeSlot != rhs.activeSlot {
-            return false
-        }
-        if lhs.numSlots != rhs.numSlots {
-            return false
-        }
-        if lhs.addr != rhs.addr {
-            return false
-        }
-        if lhs.pubkey != rhs.pubkey {
-            return false
-        }
-        if lhs.cardIdent != rhs.cardIdent {
-            return false
-        }
-        if lhs.authDelay != rhs.authDelay {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(proto)
-        hasher.combine(ver)
-        hasher.combine(birth)
-        hasher.combine(activeSlot)
-        hasher.combine(numSlots)
-        hasher.combine(addr)
-        hasher.combine(pubkey)
-        hasher.combine(cardIdent)
-        hasher.combine(authDelay)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1571,9 +1526,9 @@ public struct FfiConverterTypeSatsCardStatus: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SatsCardStatus {
         return
             try SatsCardStatus(
-                proto: FfiConverterUInt64.read(from: &buf), 
+                proto: FfiConverterUInt32.read(from: &buf), 
                 ver: FfiConverterString.read(from: &buf), 
-                birth: FfiConverterUInt64.read(from: &buf), 
+                birth: FfiConverterUInt32.read(from: &buf), 
                 activeSlot: FfiConverterUInt8.read(from: &buf), 
                 numSlots: FfiConverterUInt8.read(from: &buf), 
                 addr: FfiConverterOptionString.read(from: &buf), 
@@ -1584,9 +1539,9 @@ public struct FfiConverterTypeSatsCardStatus: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: SatsCardStatus, into buf: inout [UInt8]) {
-        FfiConverterUInt64.write(value.proto, into: &buf)
+        FfiConverterUInt32.write(value.proto, into: &buf)
         FfiConverterString.write(value.ver, into: &buf)
-        FfiConverterUInt64.write(value.birth, into: &buf)
+        FfiConverterUInt32.write(value.birth, into: &buf)
         FfiConverterUInt8.write(value.activeSlot, into: &buf)
         FfiConverterUInt8.write(value.numSlots, into: &buf)
         FfiConverterOptionString.write(value.addr, into: &buf)
@@ -1612,18 +1567,18 @@ public func FfiConverterTypeSatsCardStatus_lower(_ value: SatsCardStatus) -> Rus
 }
 
 
-public struct SatsChipStatus {
-    public var proto: UInt64
+public struct SatsChipStatus: Equatable, Hashable {
+    public var proto: UInt32
     public var ver: String
-    public var birth: UInt64
-    public var path: [UInt64]?
+    public var birth: UInt32
+    public var path: [UInt32]?
     public var pubkey: String
     public var cardIdent: String
     public var authDelay: UInt8?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(proto: UInt64, ver: String, birth: UInt64, path: [UInt64]?, pubkey: String, cardIdent: String, authDelay: UInt8?) {
+    public init(proto: UInt32, ver: String, birth: UInt32, path: [UInt32]?, pubkey: String, cardIdent: String, authDelay: UInt8?) {
         self.proto = proto
         self.ver = ver
         self.birth = birth
@@ -1632,51 +1587,15 @@ public struct SatsChipStatus {
         self.cardIdent = cardIdent
         self.authDelay = authDelay
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SatsChipStatus: Sendable {}
 #endif
-
-
-extension SatsChipStatus: Equatable, Hashable {
-    public static func ==(lhs: SatsChipStatus, rhs: SatsChipStatus) -> Bool {
-        if lhs.proto != rhs.proto {
-            return false
-        }
-        if lhs.ver != rhs.ver {
-            return false
-        }
-        if lhs.birth != rhs.birth {
-            return false
-        }
-        if lhs.path != rhs.path {
-            return false
-        }
-        if lhs.pubkey != rhs.pubkey {
-            return false
-        }
-        if lhs.cardIdent != rhs.cardIdent {
-            return false
-        }
-        if lhs.authDelay != rhs.authDelay {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(proto)
-        hasher.combine(ver)
-        hasher.combine(birth)
-        hasher.combine(path)
-        hasher.combine(pubkey)
-        hasher.combine(cardIdent)
-        hasher.combine(authDelay)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1685,10 +1604,10 @@ public struct FfiConverterTypeSatsChipStatus: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SatsChipStatus {
         return
             try SatsChipStatus(
-                proto: FfiConverterUInt64.read(from: &buf), 
+                proto: FfiConverterUInt32.read(from: &buf), 
                 ver: FfiConverterString.read(from: &buf), 
-                birth: FfiConverterUInt64.read(from: &buf), 
-                path: FfiConverterOptionSequenceUInt64.read(from: &buf), 
+                birth: FfiConverterUInt32.read(from: &buf), 
+                path: FfiConverterOptionSequenceUInt32.read(from: &buf), 
                 pubkey: FfiConverterString.read(from: &buf), 
                 cardIdent: FfiConverterString.read(from: &buf), 
                 authDelay: FfiConverterOptionUInt8.read(from: &buf)
@@ -1696,10 +1615,10 @@ public struct FfiConverterTypeSatsChipStatus: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: SatsChipStatus, into buf: inout [UInt8]) {
-        FfiConverterUInt64.write(value.proto, into: &buf)
+        FfiConverterUInt32.write(value.proto, into: &buf)
         FfiConverterString.write(value.ver, into: &buf)
-        FfiConverterUInt64.write(value.birth, into: &buf)
-        FfiConverterOptionSequenceUInt64.write(value.path, into: &buf)
+        FfiConverterUInt32.write(value.birth, into: &buf)
+        FfiConverterOptionSequenceUInt32.write(value.path, into: &buf)
         FfiConverterString.write(value.pubkey, into: &buf)
         FfiConverterString.write(value.cardIdent, into: &buf)
         FfiConverterOptionUInt8.write(value.authDelay, into: &buf)
@@ -1722,7 +1641,7 @@ public func FfiConverterTypeSatsChipStatus_lower(_ value: SatsChipStatus) -> Rus
 }
 
 
-public struct SlotDetails {
+public struct SlotDetails: Equatable, Hashable {
     public var privkey: String?
     public var pubkey: String
     public var pubkeyDescriptor: String
@@ -1734,35 +1653,15 @@ public struct SlotDetails {
         self.pubkey = pubkey
         self.pubkeyDescriptor = pubkeyDescriptor
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SlotDetails: Sendable {}
 #endif
-
-
-extension SlotDetails: Equatable, Hashable {
-    public static func ==(lhs: SlotDetails, rhs: SlotDetails) -> Bool {
-        if lhs.privkey != rhs.privkey {
-            return false
-        }
-        if lhs.pubkey != rhs.pubkey {
-            return false
-        }
-        if lhs.pubkeyDescriptor != rhs.pubkeyDescriptor {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(privkey)
-        hasher.combine(pubkey)
-        hasher.combine(pubkeyDescriptor)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1800,19 +1699,19 @@ public func FfiConverterTypeSlotDetails_lower(_ value: SlotDetails) -> RustBuffe
 }
 
 
-public struct TapSignerStatus {
-    public var proto: UInt64
+public struct TapSignerStatus: Equatable, Hashable {
+    public var proto: UInt32
     public var ver: String
-    public var birth: UInt64
-    public var path: [UInt64]?
-    public var numBackups: UInt64
+    public var birth: UInt32
+    public var path: [UInt32]?
+    public var numBackups: UInt32
     public var pubkey: String
     public var cardIdent: String
     public var authDelay: UInt8?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(proto: UInt64, ver: String, birth: UInt64, path: [UInt64]?, numBackups: UInt64, pubkey: String, cardIdent: String, authDelay: UInt8?) {
+    public init(proto: UInt32, ver: String, birth: UInt32, path: [UInt32]?, numBackups: UInt32, pubkey: String, cardIdent: String, authDelay: UInt8?) {
         self.proto = proto
         self.ver = ver
         self.birth = birth
@@ -1822,55 +1721,15 @@ public struct TapSignerStatus {
         self.cardIdent = cardIdent
         self.authDelay = authDelay
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension TapSignerStatus: Sendable {}
 #endif
-
-
-extension TapSignerStatus: Equatable, Hashable {
-    public static func ==(lhs: TapSignerStatus, rhs: TapSignerStatus) -> Bool {
-        if lhs.proto != rhs.proto {
-            return false
-        }
-        if lhs.ver != rhs.ver {
-            return false
-        }
-        if lhs.birth != rhs.birth {
-            return false
-        }
-        if lhs.path != rhs.path {
-            return false
-        }
-        if lhs.numBackups != rhs.numBackups {
-            return false
-        }
-        if lhs.pubkey != rhs.pubkey {
-            return false
-        }
-        if lhs.cardIdent != rhs.cardIdent {
-            return false
-        }
-        if lhs.authDelay != rhs.authDelay {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(proto)
-        hasher.combine(ver)
-        hasher.combine(birth)
-        hasher.combine(path)
-        hasher.combine(numBackups)
-        hasher.combine(pubkey)
-        hasher.combine(cardIdent)
-        hasher.combine(authDelay)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1879,11 +1738,11 @@ public struct FfiConverterTypeTapSignerStatus: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TapSignerStatus {
         return
             try TapSignerStatus(
-                proto: FfiConverterUInt64.read(from: &buf), 
+                proto: FfiConverterUInt32.read(from: &buf), 
                 ver: FfiConverterString.read(from: &buf), 
-                birth: FfiConverterUInt64.read(from: &buf), 
-                path: FfiConverterOptionSequenceUInt64.read(from: &buf), 
-                numBackups: FfiConverterUInt64.read(from: &buf), 
+                birth: FfiConverterUInt32.read(from: &buf), 
+                path: FfiConverterOptionSequenceUInt32.read(from: &buf), 
+                numBackups: FfiConverterUInt32.read(from: &buf), 
                 pubkey: FfiConverterString.read(from: &buf), 
                 cardIdent: FfiConverterString.read(from: &buf), 
                 authDelay: FfiConverterOptionUInt8.read(from: &buf)
@@ -1891,11 +1750,11 @@ public struct FfiConverterTypeTapSignerStatus: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: TapSignerStatus, into buf: inout [UInt8]) {
-        FfiConverterUInt64.write(value.proto, into: &buf)
+        FfiConverterUInt32.write(value.proto, into: &buf)
         FfiConverterString.write(value.ver, into: &buf)
-        FfiConverterUInt64.write(value.birth, into: &buf)
-        FfiConverterOptionSequenceUInt64.write(value.path, into: &buf)
-        FfiConverterUInt64.write(value.numBackups, into: &buf)
+        FfiConverterUInt32.write(value.birth, into: &buf)
+        FfiConverterOptionSequenceUInt32.write(value.path, into: &buf)
+        FfiConverterUInt32.write(value.numBackups, into: &buf)
         FfiConverterString.write(value.pubkey, into: &buf)
         FfiConverterString.write(value.cardIdent, into: &buf)
         FfiConverterOptionUInt8.write(value.authDelay, into: &buf)
@@ -1921,7 +1780,8 @@ public func FfiConverterTypeTapSignerStatus_lower(_ value: TapSignerStatus) -> R
 /**
  * Errors returned by the CkTap card.
  */
-public enum CardError: Swift.Error {
+public 
+enum CardError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1936,8 +1796,21 @@ public enum CardError: Swift.Error {
     case BadCbor
     case BackupFirst
     case RateLimited
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CardError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2038,25 +1911,11 @@ public func FfiConverterTypeCardError_lower(_ value: CardError) -> RustBuffer {
 }
 
 
-extension CardError: Equatable, Hashable {}
-
-
-
-
-extension CardError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `certs` command.
  */
-public enum CertsError: Swift.Error {
+public 
+enum CertsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2066,8 +1925,21 @@ public enum CertsError: Swift.Error {
     )
     case InvalidRootCert(msg: String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CertsError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2137,37 +2009,36 @@ public func FfiConverterTypeCertsError_lower(_ value: CertsError) -> RustBuffer 
 }
 
 
-extension CertsError: Equatable, Hashable {}
-
-
-
-
-extension CertsError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `change` command.
  */
-public enum ChangeError: Swift.Error {
+public 
+enum ChangeError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case CkTap(err: CkTapError
     )
-    case TooShort(len: UInt64
+    case TooShort(len: UInt8
     )
-    case TooLong(len: UInt64
+    case TooLong(len: UInt8
     )
     case SameAsOld
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension ChangeError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2186,10 +2057,10 @@ public struct FfiConverterTypeChangeError: FfiConverterRustBuffer {
             err: try FfiConverterTypeCkTapError.read(from: &buf)
             )
         case 2: return .TooShort(
-            len: try FfiConverterUInt64.read(from: &buf)
+            len: try FfiConverterUInt8.read(from: &buf)
             )
         case 3: return .TooLong(
-            len: try FfiConverterUInt64.read(from: &buf)
+            len: try FfiConverterUInt8.read(from: &buf)
             )
         case 4: return .SameAsOld
 
@@ -2211,12 +2082,12 @@ public struct FfiConverterTypeChangeError: FfiConverterRustBuffer {
         
         case let .TooShort(len):
             writeInt(&buf, Int32(2))
-            FfiConverterUInt64.write(len, into: &buf)
+            FfiConverterUInt8.write(len, into: &buf)
             
         
         case let .TooLong(len):
             writeInt(&buf, Int32(3))
-            FfiConverterUInt64.write(len, into: &buf)
+            FfiConverterUInt8.write(len, into: &buf)
             
         
         case .SameAsOld:
@@ -2242,22 +2113,6 @@ public func FfiConverterTypeChangeError_lower(_ value: ChangeError) -> RustBuffe
 }
 
 
-extension ChangeError: Equatable, Hashable {}
-
-
-
-
-extension ChangeError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
 public enum CkTapCard {
     
@@ -2267,8 +2122,12 @@ public enum CkTapCard {
     )
     case satsChip(SatsChip
     )
-}
 
+
+
+
+
+}
 
 #if compiler(>=6)
 extension CkTapCard: Sendable {}
@@ -2336,14 +2195,11 @@ public func FfiConverterTypeCkTapCard_lower(_ value: CkTapCard) -> RustBuffer {
 
 
 
-
-
-
-
 /**
  * Errors returned by the card, CBOR deserialization or value encoding, or the APDU transport.
  */
-public enum CkTapError: Swift.Error {
+public 
+enum CkTapError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2356,8 +2212,21 @@ public enum CkTapError: Swift.Error {
     case Transport(msg: String
     )
     case UnknownCardType
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CkTapError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2440,25 +2309,11 @@ public func FfiConverterTypeCkTapError_lower(_ value: CkTapError) -> RustBuffer 
 }
 
 
-extension CkTapError: Equatable, Hashable {}
-
-
-
-
-extension CkTapError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `derive` command.
  */
-public enum DeriveError: Swift.Error {
+public 
+enum DeriveError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2468,8 +2323,21 @@ public enum DeriveError: Swift.Error {
     )
     case InvalidChainCode(msg: String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DeriveError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2539,25 +2407,11 @@ public func FfiConverterTypeDeriveError_lower(_ value: DeriveError) -> RustBuffe
 }
 
 
-extension DeriveError: Equatable, Hashable {}
-
-
-
-
-extension DeriveError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `dump` command.
  */
-public enum DumpError: Swift.Error {
+public 
+enum DumpError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2576,8 +2430,21 @@ public enum DumpError: Swift.Error {
      */
     case SlotTampered(slot: UInt8
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DumpError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2663,31 +2530,30 @@ public func FfiConverterTypeDumpError_lower(_ value: DumpError) -> RustBuffer {
 }
 
 
-extension DumpError: Equatable, Hashable {}
+public 
+enum KeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
-
-
-
-extension DumpError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum KeyError: Swift.Error {
-
-
-
+    
+    
     case Secp256k1(msg: String
     )
     case KeyFromSlice(msg: String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension KeyError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2749,25 +2615,11 @@ public func FfiConverterTypeKeyError_lower(_ value: KeyError) -> RustBuffer {
 }
 
 
-extension KeyError: Equatable, Hashable {}
-
-
-
-
-extension KeyError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `read` command.
  */
-public enum ReadError: Swift.Error {
+public 
+enum ReadError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2775,8 +2627,21 @@ public enum ReadError: Swift.Error {
     )
     case Key(err: KeyError
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension ReadError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2838,34 +2703,20 @@ public func FfiConverterTypeReadError_lower(_ value: ReadError) -> RustBuffer {
 }
 
 
-extension ReadError: Equatable, Hashable {}
-
-
-
-
-extension ReadError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum SignPsbtError: Swift.Error {
+public 
+enum SignPsbtError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
-    case InvalidPath(index: UInt64
+    case InvalidPath(index: UInt32
     )
-    case InvalidScript(index: UInt64
+    case InvalidScript(index: UInt32
     )
-    case MissingPubkey(index: UInt64
+    case MissingPubkey(index: UInt32
     )
-    case MissingUtxo(index: UInt64
+    case MissingUtxo(index: UInt32
     )
-    case PubkeyMismatch(index: UInt64
+    case PubkeyMismatch(index: UInt32
     )
     case SighashError(msg: String
     )
@@ -2881,8 +2732,21 @@ public enum SignPsbtError: Swift.Error {
     )
     case Base64Encoding(msg: String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SignPsbtError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2898,19 +2762,19 @@ public struct FfiConverterTypeSignPsbtError: FfiConverterRustBuffer {
 
         
         case 1: return .InvalidPath(
-            index: try FfiConverterUInt64.read(from: &buf)
+            index: try FfiConverterUInt32.read(from: &buf)
             )
         case 2: return .InvalidScript(
-            index: try FfiConverterUInt64.read(from: &buf)
+            index: try FfiConverterUInt32.read(from: &buf)
             )
         case 3: return .MissingPubkey(
-            index: try FfiConverterUInt64.read(from: &buf)
+            index: try FfiConverterUInt32.read(from: &buf)
             )
         case 4: return .MissingUtxo(
-            index: try FfiConverterUInt64.read(from: &buf)
+            index: try FfiConverterUInt32.read(from: &buf)
             )
         case 5: return .PubkeyMismatch(
-            index: try FfiConverterUInt64.read(from: &buf)
+            index: try FfiConverterUInt32.read(from: &buf)
             )
         case 6: return .SighashError(
             msg: try FfiConverterString.read(from: &buf)
@@ -2947,27 +2811,27 @@ public struct FfiConverterTypeSignPsbtError: FfiConverterRustBuffer {
         
         case let .InvalidPath(index):
             writeInt(&buf, Int32(1))
-            FfiConverterUInt64.write(index, into: &buf)
+            FfiConverterUInt32.write(index, into: &buf)
             
         
         case let .InvalidScript(index):
             writeInt(&buf, Int32(2))
-            FfiConverterUInt64.write(index, into: &buf)
+            FfiConverterUInt32.write(index, into: &buf)
             
         
         case let .MissingPubkey(index):
             writeInt(&buf, Int32(3))
-            FfiConverterUInt64.write(index, into: &buf)
+            FfiConverterUInt32.write(index, into: &buf)
             
         
         case let .MissingUtxo(index):
             writeInt(&buf, Int32(4))
-            FfiConverterUInt64.write(index, into: &buf)
+            FfiConverterUInt32.write(index, into: &buf)
             
         
         case let .PubkeyMismatch(index):
             writeInt(&buf, Int32(5))
-            FfiConverterUInt64.write(index, into: &buf)
+            FfiConverterUInt32.write(index, into: &buf)
             
         
         case let .SighashError(msg):
@@ -3024,25 +2888,11 @@ public func FfiConverterTypeSignPsbtError_lower(_ value: SignPsbtError) -> RustB
 }
 
 
-extension SignPsbtError: Equatable, Hashable {}
-
-
-
-
-extension SignPsbtError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `status` command.
  */
-public enum StatusError: Swift.Error {
+public 
+enum StatusError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3050,8 +2900,21 @@ public enum StatusError: Swift.Error {
     )
     case Key(err: KeyError
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension StatusError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3113,25 +2976,11 @@ public func FfiConverterTypeStatusError_lower(_ value: StatusError) -> RustBuffe
 }
 
 
-extension StatusError: Equatable, Hashable {}
-
-
-
-
-extension StatusError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `unseal` command.
  */
-public enum UnsealError: Swift.Error {
+public 
+enum UnsealError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3139,8 +2988,21 @@ public enum UnsealError: Swift.Error {
     )
     case Key(err: KeyError
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension UnsealError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3202,25 +3064,11 @@ public func FfiConverterTypeUnsealError_lower(_ value: UnsealError) -> RustBuffe
 }
 
 
-extension UnsealError: Equatable, Hashable {}
-
-
-
-
-extension UnsealError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors returned by the `xpub` command.
  */
-public enum XpubError: Swift.Error {
+public 
+enum XpubError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3228,8 +3076,21 @@ public enum XpubError: Swift.Error {
     )
     case Bip32(msg: String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension XpubError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3291,21 +3152,6 @@ public func FfiConverterTypeXpubError_lower(_ value: XpubError) -> RustBuffer {
 }
 
 
-extension XpubError: Equatable, Hashable {}
-
-
-
-
-extension XpubError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 
 
 public protocol CkTransport: AnyObject, Sendable {
@@ -3321,9 +3167,8 @@ fileprivate struct UniffiCallbackInterfaceCkTransport {
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
     //
-    // This creates 1-element array, since this seems to be the only way to construct a const
-    // pointer that we can pass to the Rust code.
-    static let vtable: [UniffiVTableCallbackInterfaceCkTransport] = [UniffiVTableCallbackInterfaceCkTransport(
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceCkTransport = UniffiVTableCallbackInterfaceCkTransport(
         uniffiFree: { (uniffiHandle: UInt64) -> () in
             do {
                 try FfiConverterCallbackInterfaceCkTransport.handleMap.remove(handle: uniffiHandle)
@@ -3381,11 +3226,19 @@ fileprivate struct UniffiCallbackInterfaceCkTransport {
                 droppedCallback: uniffiOutDroppedCallback
             )
         }
-    )]
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceCkTransport> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceCkTransport>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
 }
 
 private func uniffiCallbackInitCkTransport() {
-    uniffi_cktap_ffi_fn_init_callback_vtable_cktransport(UniffiCallbackInterfaceCkTransport.vtable)
+    uniffi_cktap_ffi_fn_init_callback_vtable_cktransport(UniffiCallbackInterfaceCkTransport.vtablePtr)
 }
 
 // FfiConverter protocol for callback interfaces
@@ -3499,8 +3352,8 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionSequenceUInt64: FfiConverterRustBuffer {
-    typealias SwiftType = [UInt64]?
+fileprivate struct FfiConverterOptionSequenceUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = [UInt32]?
 
     public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
         guard let value = value else {
@@ -3508,13 +3361,13 @@ fileprivate struct FfiConverterOptionSequenceUInt64: FfiConverterRustBuffer {
             return
         }
         writeInt(&buf, Int8(1))
-        FfiConverterSequenceUInt64.write(value, into: &buf)
+        FfiConverterSequenceUInt32.write(value, into: &buf)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
-        case 1: return try FfiConverterSequenceUInt64.read(from: &buf)
+        case 1: return try FfiConverterSequenceUInt32.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -3544,31 +3397,6 @@ fileprivate struct FfiConverterSequenceUInt32: FfiConverterRustBuffer {
         return seq
     }
 }
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterSequenceUInt64: FfiConverterRustBuffer {
-    typealias SwiftType = [UInt64]
-
-    public static func write(_ value: [UInt64], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for item in value {
-            FfiConverterUInt64.write(item, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [UInt64] {
-        let len: Int32 = try readInt(&buf)
-        var seq = [UInt64]()
-        seq.reserveCapacity(Int(len))
-        for _ in 0 ..< len {
-            seq.append(try FfiConverterUInt64.read(from: &buf))
-        }
-        return seq
-    }
-}
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
 
@@ -3594,7 +3422,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
         pollResult = await withUnsafeContinuation {
             pollFunc(
                 rustFuture,
-                uniffiFutureContinuationCallback,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
                 uniffiContinuationHandleMap.insert(obj: $0)
             )
         }
@@ -3622,11 +3452,22 @@ private func uniffiTraitInterfaceCallAsync<T>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // Note: it's important we call either `handleSuccess` or `handleError` exactly once.  Each
+        // call consumes an Arc reference, which means there should be no possibility of a double
+        // call.  The following code is structured so that will will never call both `handleSuccess`
+        // and `handleError`, even in the face of weird errors.
+        //
+        // On platforms that need extra machinery to make C-ABI calls, like JNA or ctypes, it's
+        // possible that we fail to make either call.  However, it doesn't seem like this is
+        // possible on Swift since swift can just make the C call directly.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -3643,13 +3484,19 @@ private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // See the note in uniffiTraitInterfaceCallAsync for details on `handleSuccess` and
+        // `handleError`.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch let error as E {
             handleError(CALL_ERROR, lowerError(error))
+            return
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -3718,100 +3565,100 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_cktap_ffi_checksum_func_to_cktap() != 56485) {
+    if (uniffi_cktap_ffi_checksum_func_to_cktap() != 32899) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_address() != 9818) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_address() != 37827) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_check_cert() != 6533) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_check_cert() != 25375) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_dump() != 37004) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_dump() != 20225) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_new_slot() != 45340) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_new_slot() != 360) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_nfc() != 40391) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_nfc() != 5150) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_read() != 43229) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_read() != 18530) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_sign_psbt() != 883) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_sign_psbt() != 16908) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_status() != 20150) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_status() != 2484) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_unseal() != 57458) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_unseal() != 18864) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satscard_wait() != 25633) {
+    if (uniffi_cktap_ffi_checksum_method_satscard_wait() != 42374) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_change() != 49089) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_change() != 64965) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_check_cert() != 60748) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_check_cert() != 22418) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_derive() != 63960) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_derive() != 35847) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_init() != 64376) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_init() != 43462) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_nfc() != 6460) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_nfc() != 32869) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_read() != 36900) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_read() != 49709) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_sign_psbt() != 39519) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_sign_psbt() != 141) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_status() != 14916) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_status() != 7960) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_wait() != 900) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_wait() != 6345) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_satschip_xpub() != 24217) {
+    if (uniffi_cktap_ffi_checksum_method_satschip_xpub() != 63340) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_change() != 45) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_change() != 63099) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_check_cert() != 64898) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_check_cert() != 18657) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_derive() != 1802) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_derive() != 36393) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_init() != 56161) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_init() != 19476) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_nfc() != 1711) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_nfc() != 36157) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_read() != 26591) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_read() != 700) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_sign_psbt() != 19540) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_sign_psbt() != 3541) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_status() != 24164) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_status() != 53193) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_wait() != 51284) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_wait() != 39921) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_tapsigner_xpub() != 22073) {
+    if (uniffi_cktap_ffi_checksum_method_tapsigner_xpub() != 48830) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_cktap_ffi_checksum_method_cktransport_transmit_apdu() != 15044) {
+    if (uniffi_cktap_ffi_checksum_method_cktransport_transmit_apdu() != 56609) {
         return InitializationResult.apiChecksumMismatch
     }
 

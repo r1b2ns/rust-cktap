@@ -16,9 +16,9 @@ pub struct SatsCard(pub Mutex<rust_cktap::SatsCard>);
 
 #[derive(uniffi::Record, Debug, Clone)]
 pub struct SatsCardStatus {
-    pub proto: u64,
+    pub proto: u32,
     pub ver: String,
-    pub birth: u64,
+    pub birth: u32,
     pub active_slot: u8,
     pub num_slots: u8,
     pub addr: Option<String>,
@@ -40,9 +40,9 @@ impl SatsCard {
         let card = self.0.lock().await;
         let pubkey = card.pubkey().to_string();
         SatsCardStatus {
-            proto: card.proto as u64,
+            proto: card.proto,
             ver: card.ver().to_string(),
-            birth: card.birth as u64,
+            birth: card.birth,
             active_slot: card.slots.0,
             num_slots: card.slots.1,
             addr: card.addr.clone(),

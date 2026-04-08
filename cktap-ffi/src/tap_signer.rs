@@ -16,11 +16,11 @@ pub struct TapSigner(pub Mutex<rust_cktap::TapSigner>);
 
 #[derive(uniffi::Record, Debug, Clone)]
 pub struct TapSignerStatus {
-    pub proto: u64,
+    pub proto: u32,
     pub ver: String,
-    pub birth: u64,
-    pub path: Option<Vec<u64>>,
-    pub num_backups: u64,
+    pub birth: u32,
+    pub path: Option<Vec<u32>>,
+    pub num_backups: u32,
     pub pubkey: String,
     pub card_ident: String,
     pub auth_delay: Option<u8>,
@@ -31,14 +31,11 @@ impl TapSigner {
     pub async fn status(&self) -> TapSignerStatus {
         let card = self.0.lock().await;
         TapSignerStatus {
-            proto: card.proto as u64,
+            proto: card.proto,
             ver: card.ver().to_string(),
-            birth: card.birth as u64,
-            path: card
-                .path
-                .clone()
-                .map(|p| p.iter().map(|&p| p as u64).collect()),
-            num_backups: card.num_backups.unwrap_or_default() as u64,
+            birth: card.birth,
+            path: card.path.clone(),
+            num_backups: card.num_backups.unwrap_or_default(),
             pubkey: card.pubkey().to_string(),
             card_ident: card.card_ident(),
             auth_delay: card.auth_delay(),
